@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { SimplexNoise } from "three/examples/jsm/math/SimplexNoise.js";
 
 const geometry = new THREE.BoxGeometry();
 const material = new THREE.MeshLambertMaterial({ color: 0x00d000 }); // lambert gives shading to material
@@ -14,13 +15,21 @@ const material = new THREE.MeshLambertMaterial({ color: 0x00d000 }); // lambert 
 
 export class World extends THREE.Group {
   /**
-   *
    * @type {{
    *  id: number,
    *  instanceId : number,
    * }[][][]}
    */
   data = []; // contains what each 'block' is at each x, y, and z location. id represents the block type ( dirt, wood, grass, ....) and instanceId represents the mesh instance at the specific location
+
+  //terrain generation params
+  params = {
+    terrain: {
+      scale: 30,
+      magnitude: 0.5,
+      offset: 0.2,
+    },
+  };
 
   // Group is the collection of all the "blocks" in the world
   constructor(size = { width: 64, height: 32 }) {
@@ -32,14 +41,15 @@ export class World extends THREE.Group {
    * generates the world data and meshes
    */
   generate() {
+    this.initializeTerrain();
     this.generateTerrain();
     this.generateMeshes();
   }
 
   /**
-   * generates the world terrain data
+   * initial world terrain data
    */
-  generateTerrain() {
+  initializeTerrain() {
     this.data = []; // clear data array (resets world)
     for (let x = 0; x < this.size.width; x++) {
       const slice = [];
@@ -47,13 +57,44 @@ export class World extends THREE.Group {
         const row = [];
         for (let z = 0; z < this.size.width; z++) {
           row.push({
-            id: 1,
+            id: 0,
             instanceId: null,
           }); // default object for block
         }
         slice.push(row);
       }
       this.data.push(slice);
+    }
+  }
+
+  /**
+   * generates the terrain data for the world
+   */
+  generateTerrain() {
+    const simplex = new SimplexNoise();
+    // get height at each x and z location. this helps with seed regeneration.
+    for (let x = 0; x < this.size.width; x++) {
+      for (let z = 0; z < this.size.width; z++) {
+        // need to be able to adjust x n z based on terrain params
+        const value = simplex.noise(
+          // bigger the scale the less the noise will change over a distance
+          x / this.params.terrain.scale,
+          z / this.params.terrain.scale
+        );
+
+        // scale the noise based on the mag and offset
+        const scaledNoise =
+          this.params.terrain.offset + this.params.terrain.magnitude * value;
+
+        let height = Math.floor(this.size.height * scaledNoise); // computes the height of the terrain. want integer
+
+        height = Math.max(0, Math.min(height, this.size.height - 1)); //clamp height between 0 and max height
+
+        //fills all blocks at or below the terrain height
+        for (let y = 0; y <= height; y++) {
+          this.setBlockId(x, y, z, 1);
+        }
+      }
     }
   }
 
