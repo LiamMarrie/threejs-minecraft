@@ -1,6 +1,8 @@
 import * as THREE from "three";
 import { SimplexNoise } from "three/examples/jsm/math/SimplexNoise.js";
 
+import { RNG } from "./rng";
+
 const geometry = new THREE.BoxGeometry();
 const material = new THREE.MeshLambertMaterial({ color: 0x00d000 }); // lambert gives shading to material
 
@@ -9,6 +11,8 @@ const material = new THREE.MeshLambertMaterial({ color: 0x00d000 }); // lambert 
  
  Use InstancedMesh if you have to render a large number of objects with the same geometry and material(s) but with different world transformations.  
     - reduces draw calls 
+
+ in simplex noise r = math 
 
 
 */
@@ -24,6 +28,7 @@ export class World extends THREE.Group {
 
   //terrain generation params
   params = {
+    seed: 0,
     terrain: {
       scale: 30,
       magnitude: 0.5,
@@ -71,7 +76,8 @@ export class World extends THREE.Group {
    * generates the terrain data for the world
    */
   generateTerrain() {
-    const simplex = new SimplexNoise();
+    const rng = new RNG(this.params.seed);
+    const simplex = new SimplexNoise(rng);
     // get height at each x and z location. this helps with seed regeneration.
     for (let x = 0; x < this.size.width; x++) {
       for (let z = 0; z < this.size.width; z++) {
@@ -82,13 +88,13 @@ export class World extends THREE.Group {
           z / this.params.terrain.scale
         );
 
-        // scale the noise based on the mag and offset
+        // scale the noise based on the magnitude and offset
         const scaledNoise =
           this.params.terrain.offset + this.params.terrain.magnitude * value;
 
         let height = Math.floor(this.size.height * scaledNoise); // computes the height of the terrain. want integer
 
-        height = Math.max(0, Math.min(height, this.size.height - 1)); //clamp height between 0 and max height
+        height = Math.max(0, Math.min(height, this.size.height - 1)); // clamp height between 0 and max height
 
         //fills all blocks at or below the terrain height
         for (let y = 0; y <= height; y++) {
