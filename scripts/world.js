@@ -20,7 +20,7 @@ export class World extends THREE.Group {
    *  instanceId : number,
    * }[][][]}
    */
-  data = []; // contains what each 'block' is at each x, y, and z location. id represents the block type and instanceId represents the mesh instance at the specific location
+  data = []; // contains what each 'block' is at each x, y, and z location. id represents the block type ( dirt, wood, grass, ....) and instanceId represents the mesh instance at the specific location
 
   // Group is the collection of all the "blocks" in the world
   constructor(size = { width: 64, height: 32 }) {
@@ -40,7 +40,7 @@ export class World extends THREE.Group {
    * generates the world terrain data
    */
   generateTerrain() {
-    this.data = [];
+    this.data = []; // clear data array (resets world)
     for (let x = 0; x < this.size.width; x++) {
       const slice = [];
       for (let y = 0; y < this.size.height; y++) {
@@ -49,7 +49,7 @@ export class World extends THREE.Group {
           row.push({
             id: 1,
             instanceId: null,
-          });
+          }); // default object for block
         }
         slice.push(row);
       }
@@ -59,6 +59,7 @@ export class World extends THREE.Group {
 
   /**
    * generates the 3D representation of the world from the world data
+   * separates world data from the 3D representation
    */
   generateMeshes() {
     this.clear();
@@ -72,11 +73,94 @@ export class World extends THREE.Group {
     for (let x = 0; x < this.size.width; x++) {
       for (let y = 0; y < this.size.height; y++) {
         for (let z = 0; z < this.size.width; z++) {
-          matrix.setPosition(x + 0.5, y + 0.5, z + 0.5);
-          mesh.setMatrixAt(mesh.count++, matrix); // set transformation matrix for each instance. start at 0 instance. set mesh count at index 0 to the matrix.....
+          const blockId = this.getBlock(x, y, z).id; // get block id
+          const instanceId = mesh.count;
+
+          if (blockId !== 0) {
+            matrix.setPosition(x + 0.5, y + 0.5, z + 0.5);
+            mesh.setMatrixAt(instanceId, matrix); // set transformation matrix for each instance. start at 0 instance. set mesh count at index 0 to the matrix.....
+            this.setBlockInstanceId(x, y, z, instanceId);
+            mesh.count++;
+          }
         }
       }
     }
     this.add(mesh);
+  }
+
+  /**
+   * HELPER METHODS
+   * 1. get block at (x, y, z)
+   *
+   * 2. set block id at (x, y, z)
+   *
+   * 3. set block instance id at (x, y, z)
+   *
+   * 4. check if (x, y, z) is in bounds
+   */
+
+  /**
+   * gets the block data at (x, y, z)
+   * @param {number} x
+   * @param {number} y
+   * @param {number} z
+   * @returns {{id: number, instanceId: number}}
+   */
+  getBlock(x, y, z) {
+    if (this.inBounds(x, y, z)) {
+      return this.data[x][y][z]; // if in bounds return block data
+    } else {
+      return null;
+    }
+  }
+
+  /**
+   * sets the block id for the block at ( x , y, z)
+   * @param {number} x
+   * @param {number} y
+   * @param {number} z
+   * @param {number} id
+   */
+  setBlockId(x, y, z, id) {
+    if (this.inBounds(x, y, z)) {
+      this.data[x][y][z].id = id;
+    }
+  }
+
+  /**
+   * sets the block instance id for the block at (x, y, z)
+   * @param {number} x
+   * @param {number} y
+   * @param {number} z
+   * @param {number} instanceId
+   *
+   */
+  setBlockInstanceId(x, y, z, instanceId) {
+    if (this.inBounds(x, y, z)) {
+      this.data[x][y][z].instanceId = instanceId;
+    }
+  }
+
+  /**
+   * checks if the ( x, y, z) coords are within bounds
+   * @param {number} x
+   * @param {number} y
+   * @param {number} z
+   * @returns {boolean}
+   */
+  inBounds(x, y, z) {
+    if (
+      x >= 0 &&
+      x < this.size.width &&
+      y >= 0 &&
+      y < this.size.height &&
+      z >= 0 &&
+      z < this.size.width
+    ) {
+      // checks to ensure the coords are within the bounds
+      return true;
+    } else {
+      return false;
+    }
   }
 }
