@@ -132,7 +132,7 @@ export class World extends THREE.Group {
           const instanceId = mesh.count;
           const blockType = Object.values(blocks).find((x) => x.id === blockId); // gets array of all block object types then finding id of block that matches the blockId at the x, y, z coordinates
 
-          if (blockId !== 0) {
+          if (blockId !== blocks.empty.id && !this.isBlockHidden(x, y, z)) {
             matrix.setPosition(x + 0.5, y + 0.5, z + 0.5);
             mesh.setMatrixAt(instanceId, matrix); // set transformation matrix for each instance. start at 0 instance. set mesh count at index 0 to the matrix.....
             mesh.setColorAt(instanceId, new THREE.Color(blockType.color)); // sets block color per instance
@@ -219,5 +219,45 @@ export class World extends THREE.Group {
     } else {
       return false;
     }
+  }
+
+  /**
+   * check if the block is completely obscured by other blocks
+   * @param {number} x
+   * @param {number} y
+   * @param {number} z
+   * @returns {boolean}
+   */
+  isBlockHidden(x, y, z) {
+    const neighbors = [
+      { x: 0, y: 1, z: 0 }, // up
+      { x: 0, y: -1, z: 0 }, // down
+      { x: 1, y: 0, z: 0 }, // left
+      { x: -1, y: 0, z: 0 }, // right
+      { x: 0, y: 0, z: 1 }, // forward
+      { x: 0, y: 0, z: -1 }, // back
+    ];
+
+    for (let { x: dx, y: dy, z: dz } of neighbors) {
+      const neighborBlock =
+        this.getBlock(x + dx, y + dy, z + dz)?.id ?? blocks.empty.id;
+      if (neighborBlock === blocks.empty.id) {
+        return false; //block not obscured if any neighbor is empty
+      }
+    }
+
+    return true; // block is fully obscured if all neighbors are non-empty
+  }
+
+  /**
+   * remove all child objects in the world and clears the group
+   */
+  removeChildren() {
+    this.traverse((child) => {
+      if (child.dispose) {
+        child.dispose();
+      }
+    });
+    this.clear();
   }
 }
