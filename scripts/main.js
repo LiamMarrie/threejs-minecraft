@@ -5,35 +5,77 @@ import Stats from "three/examples/jsm/libs/stats.module.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { World } from "./world";
 import { createUI } from "./ui";
+import { createLandingScreen } from "./landing";
+import audioManager from "./audio";
 
-const stats = new Stats();
-document.body.append(stats.dom);
+let stats, renderer, camera, controls, scene, world;
 
-// render setup
-const renderer = new THREE.WebGLRenderer();
-renderer.setPixelRatio(window.devicePixelRatio);
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setClearColor(0x80a0e0);
+function initGame(worldParams) {
+  stats = new Stats();
+  document.body.append(stats.dom);
 
-document.body.appendChild(renderer.domElement);
+  // render setup
+  renderer = new THREE.WebGLRenderer();
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x80a0e0);
 
-// camera setup
-const camera = new THREE.PerspectiveCamera(
-  75,
-  window.innerWidth / window.innerHeight
-);
-camera.position.set(-32, 16, -32);
+  document.body.appendChild(renderer.domElement);
 
-// orbit controls
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.target.set(16, 16, 16);
-controls.update();
+  // camera setup
+  camera = new THREE.PerspectiveCamera(
+    75,
+    window.innerWidth / window.innerHeight
+  );
+  camera.position.set(-32, 16, -32);
 
-// scene setup
-const scene = new THREE.Scene();
-const world = new World();
-world.generate();
-scene.add(world);
+  // orbit controls
+  controls = new OrbitControls(camera, renderer.domElement);
+  controls.target.set(16, 16, 16);
+  controls.update();
+
+  // scene setup
+  scene = new THREE.Scene();
+  world = new World(worldParams?.size || { width: 64, height: 32 });
+
+  // apply world parameters if provided
+  if (worldParams) {
+    if (worldParams.name) {
+      world.name = worldParams.name;
+    }
+
+    if (worldParams.seed) {
+      world.params.seed = worldParams.seed;
+    }
+
+    if (worldParams.terrain) {
+      world.params.terrain = {
+        ...world.params.terrain,
+        ...worldParams.terrain,
+      };
+    }
+
+    // Store additional parameters for later save/load
+    world.gameMode = worldParams.gameMode || "survival";
+    world.difficulty = worldParams.difficulty || "normal";
+  }
+
+  // create world
+  world.generate();
+  scene.add(world);
+
+  setupLights();
+  createUI(world);
+  animate();
+
+  // handle window resizing
+  window.addEventListener("resize", () => {
+    //update camera aspect ratio
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix(); // call func
+    renderer.setSize(window.innerWidth, window.innerHeight); // set window new size
+  });
+}
 
 //lighting
 function setupLights() {
@@ -57,14 +99,30 @@ function animate() {
   stats.update(); // display fps counter
 }
 
-// handle window resizing
-window.addEventListener("resize", () => {
-  //update camera aspect ratio
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix(); // call func
-  renderer.setSize(window.innerWidth, window.innerHeight); // set window new size
-});
+// route from home
+function removeLandingScreen() {
+  const landingElement = document.getElementById("landing-screen");
+  if (landingElement) {
+    landingElement.remove();
+  }
+}
 
-setupLights();
-createUI(world);
-animate();
+// init landing screen
+createLandingScreen({
+  onNewWorld: (worldData) => {
+    // init game with world data
+    initGame(worldData);
+  },
+
+  onLoadWorld: (worldData) => {
+    // load game world
+    initGame(worldData);
+    if (worldData && worldData.params) {
+      world.params = worldData.params;
+      if (worldData.size) {
+        world.size = worldData.size;
+      }
+      world.generate();
+    }
+  },
+});

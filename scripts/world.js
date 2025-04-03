@@ -38,7 +38,7 @@ export class World extends THREE.Group {
     },
   };
 
-  // Group is the collection of all the "blocks" in the world
+  // collection of all the "blocks" in the world
   constructor(size = { width: 64, height: 32 }) {
     // default values
     super();
