@@ -92,7 +92,7 @@ export function createLandingScreen({ onNewWorld, onLoadWorld }) {
     .splash-text {
       position: absolute;
       top: 50%;
-      right: 30px;
+      right: 5px;
       transform: translate(-50%, -50%) rotate(-20deg);
       font-size: 1.8em;
       color: #FFFF00;

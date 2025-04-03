@@ -7,8 +7,9 @@ import { World } from "./world";
 import { createUI } from "./ui";
 import { createLandingScreen } from "./landing";
 import audioManager from "./audio";
+import { Player } from "./player.js";
 
-let stats, renderer, camera, controls, scene, world;
+let stats, renderer, camera, controls, scene, world, player;
 
 function initGame(worldParams) {
   stats = new Stats();
@@ -54,15 +55,13 @@ function initGame(worldParams) {
         ...worldParams.terrain,
       };
     }
-
-    // Store additional parameters for later save/load
-    world.gameMode = worldParams.gameMode || "survival";
-    world.difficulty = worldParams.difficulty || "normal";
   }
 
   // create world
   world.generate();
   scene.add(world);
+
+  player = new Player(scene);
 
   setupLights();
   createUI(world);
@@ -95,7 +94,7 @@ function setupLights() {
 // render loop
 function animate() {
   requestAnimationFrame(animate);
-  renderer.render(scene, camera);
+  renderer.render(scene, player.camera);
   stats.update(); // display fps counter
 }
 
