@@ -6,7 +6,6 @@ import { RNG } from "./rng";
 import { blocks, resources } from "./blocks";
 
 const geometry = new THREE.BoxGeometry();
-const material = new THREE.MeshLambertMaterial();
 
 /**
   
@@ -51,7 +50,7 @@ export class World extends THREE.Group {
     const rng = new RNG(this.params.seed);
     this.initializeTerrain();
     this.generateResources(rng);
-    //this.generateTerrain(rng);
+    this.generateTerrain(rng);
     this.generateMeshes();
   }
 
@@ -146,28 +145,43 @@ export class World extends THREE.Group {
 
     // need to keep track of max count and current count. cannot go over max count limit
     const maxCount = this.size.width * this.size.width * this.size.height; // width squared x height = total num of "blocks"
-    const mesh = new THREE.InstancedMesh(geometry, material, maxCount);
-    mesh.count = 0; // curr num of instances. contains total num of instances once for loop is complete
+
+    // create lookup table where the key is the block id
+    const meshes = {};
+
+    Object.values(blocks)
+      .filter((blockType) => blockType.id !== blocks.empty.id)
+      .forEach((blockType) => {
+        const mesh = new THREE.InstancedMesh(
+          geometry,
+          blockType.material,
+          maxCount
+        );
+        mesh.name = blockType.name;
+        mesh.count = 0; // curr num of instances. contains total num of instances once for loop is complete
+        meshes[blockType.id] = mesh; // add block id to meshes table
+      });
 
     const matrix = new THREE.Matrix4(); // stores position of each block
     for (let x = 0; x < this.size.width; x++) {
       for (let y = 0; y < this.size.height; y++) {
         for (let z = 0; z < this.size.width; z++) {
           const blockId = this.getBlock(x, y, z).id; // get block id
-          const instanceId = mesh.count;
-          const blockType = Object.values(blocks).find((x) => x.id === blockId); // gets array of all block object types then finding id of block that matches the blockId at the x, y, z coordinates
+          if (blockId === blocks.empty.id) continue;
 
-          if (blockId !== blocks.empty.id && !this.isBlockHidden(x, y, z)) {
+          const mesh = meshes[blockId];
+          const instanceId = mesh.count;
+
+          if (!this.isBlockHidden(x, y, z)) {
             matrix.setPosition(x + 0.5, y + 0.5, z + 0.5);
             mesh.setMatrixAt(instanceId, matrix); // set transformation matrix for each instance. start at 0 instance. set mesh count at index 0 to the matrix.....
-            mesh.setColorAt(instanceId, new THREE.Color(blockType.color)); // sets block color per instance
             this.setBlockInstanceId(x, y, z, instanceId);
             mesh.count++;
           }
         }
       }
     }
-    this.add(mesh);
+    this.add(...Object.values(meshes));
   }
 
   /**
