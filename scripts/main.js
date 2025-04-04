@@ -91,11 +91,22 @@ function setupLights() {
   scene.add(ambient);
 }
 
+/* to find change in time between frames 
+    we get the time of the previous frame and compare to the time of the curr frame 
+*/
+let previousTime = performance.now();
+
 // render loop
 function animate() {
+  let currentTime = performance.now();
+  let dt = (currentTime - previousTime) / 1000; // dt needs to be in seconds not mil
+
   requestAnimationFrame(animate);
+  player.applyInputs(dt);
   renderer.render(scene, player.camera);
   stats.update(); // display fps counter
+
+  previousTime = currentTime;
 }
 
 // route from home
