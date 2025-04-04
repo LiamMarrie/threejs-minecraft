@@ -28,6 +28,9 @@ export class Player {
     this.camera.position.set(32, 16, 32);
     scene.add(this.camera);
 
+    this.cameraHelper = new THREE.CameraHelper(this.camera);
+    scene.add(this.cameraHelper);
+
     document.addEventListener("keydown", this.onKeyDown.bind(this));
     document.addEventListener("keyup", this.onKeyUp.bind(this));
 
@@ -102,6 +105,10 @@ export class Player {
         break;
       case "KeyD":
         this.input.x = this.maxSpeed;
+        break;
+      case "KeyR":
+        this.position.set(32, 16, 32);
+        this.velocity.set(0, 0, 0);
         break;
     }
   }

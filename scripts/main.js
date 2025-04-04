@@ -9,7 +9,7 @@ import { createLandingScreen } from "./landing";
 import audioManager from "./audio";
 import { Player } from "./player.js";
 
-let stats, renderer, camera, controls, scene, world, player;
+let stats, renderer, orbitCamera, controls, scene, world, player;
 
 function initGame(worldParams) {
   stats = new Stats();
@@ -24,14 +24,14 @@ function initGame(worldParams) {
   document.body.appendChild(renderer.domElement);
 
   // camera setup
-  camera = new THREE.PerspectiveCamera(
+  orbitCamera = new THREE.PerspectiveCamera(
     75,
     window.innerWidth / window.innerHeight
   );
-  camera.position.set(-32, 16, -32);
+  orbitCamera.position.set(-32, 16, -32);
 
   // orbit controls
-  controls = new OrbitControls(camera, renderer.domElement);
+  controls = new OrbitControls(orbitCamera, renderer.domElement);
   controls.target.set(16, 16, 16);
   controls.update();
 
@@ -64,14 +64,16 @@ function initGame(worldParams) {
   player = new Player(scene);
 
   setupLights();
-  createUI(world);
+  createUI(world, player);
   animate();
 
   // handle window resizing
   window.addEventListener("resize", () => {
     //update camera aspect ratio
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix(); // call func
+    orbitCamera.aspect = window.innerWidth / window.innerHeight;
+    orbitCamera.updateProjectionMatrix();
+    player.camera.aspect = window.innerWidth / window.innerHeight;
+    player.camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight); // set window new size
   });
 }
@@ -103,7 +105,10 @@ function animate() {
 
   requestAnimationFrame(animate);
   player.applyInputs(dt);
-  renderer.render(scene, player.camera);
+  renderer.render(
+    scene,
+    player.controls.isLocked ? player.camera : orbitCamera
+  );
   stats.update(); // display fps counter
 
   previousTime = currentTime;
