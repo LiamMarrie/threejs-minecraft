@@ -172,17 +172,19 @@ export function createLandingScreen({ onNewWorld, onLoadWorld }) {
       color: white;
       font-size: 14px;
       text-shadow: 1px 1px black;
+      margin: 15px;
     }
     
     .github {
       position: absolute;
-      bottom: 20px;
-      right: 20px;
+      bottom: 10px;
+      right: 10px;
       display: flex;
       align-items: center;
       color: white;
       font-size: 14px;
       text-shadow: 1px 1px black;
+      margin: 15px;
     }
     
     .github-icon {
