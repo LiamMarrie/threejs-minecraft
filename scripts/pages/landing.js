@@ -1,4 +1,4 @@
-import audioManager from "./audio";
+import audioManager from "../sfx/audio";
 import { createNewWorldScreen } from "./new-world";
 
 /**

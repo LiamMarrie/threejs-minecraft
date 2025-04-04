@@ -3,11 +3,11 @@ import * as THREE from "three"; // threeJS library
 //fps counter
 import Stats from "three/examples/jsm/libs/stats.module.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { World } from "./world";
-import { createUI } from "./ui";
-import { createLandingScreen } from "./landing";
-import audioManager from "./audio";
-import { Player } from "./player.js";
+import { World } from "./world.js";
+import { createUI } from "./ui/ui.js";
+import { createLandingScreen } from "./pages/landing.js";
+import audioManager from "./sfx/audio.js";
+import { Player } from "./player/player.js";
 
 let stats, renderer, orbitCamera, controls, scene, world, player;
 

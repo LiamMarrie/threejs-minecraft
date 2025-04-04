@@ -3,7 +3,7 @@ import { SimplexNoise } from "three/examples/jsm/math/SimplexNoise.js";
 
 import { RNG } from "./rng";
 
-import { blocks, resources } from "./blocks";
+import { blocks, resources } from "./block/blocks";
 
 const geometry = new THREE.BoxGeometry();
 

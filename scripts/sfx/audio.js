@@ -1,3 +1,11 @@
+/**
+ *
+ * TODO:
+ * 1. add ui interaction sfx
+ * 2. walking sfx with appropriate for the dif block types
+ * 3. block placing and mining
+ */
+
 const musicTracks = [
   {
     file: "../public/music/C418  - Sweden - Minecraft Volume Alpha.mp3",
@@ -22,7 +30,7 @@ class AudioManager {
     this.currentTrack = null;
     this.audioElement = null;
     this.isPlaying = false;
-    this.volume = 0.6;
+    this.volume = 0.7;
     this.initialize();
   }
 
