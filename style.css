@@ -1,3 +1,13 @@
 body {
   margin: 0;
 }
+
+#info {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  font-family: monocraft, Consolas, "Courier New", monospace;
+  font-size: 1rem;
+  color: white;
+  margin: 20px;
+}

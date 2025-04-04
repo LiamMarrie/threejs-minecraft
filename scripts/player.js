@@ -44,6 +44,10 @@ export class Player {
       this.velocity.z = this.input.z;
       this.controls.moveRight(this.velocity.x * dt); // change in distance left or right
       this.controls.moveForward(this.velocity.z * dt); // forward or backward
+
+      //player position
+      document.getElementById("player-position").innerHTML =
+        this.playerPosition();
     }
   }
 
@@ -100,5 +104,16 @@ export class Player {
         this.input.x = this.maxSpeed;
         break;
     }
+  }
+
+  /**
+   * returns player position in a readable string format
+   */
+  playerPosition() {
+    let str = "";
+    str += `X:${this.position.x.toFixed(3)} `;
+    str += `Y:${this.position.y.toFixed(3)} `;
+    str += `Z:${this.position.z.toFixed(3)} `;
+    return str;
   }
 }
