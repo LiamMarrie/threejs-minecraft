@@ -1,6 +1,6 @@
 import { GUI } from "three/addons/libs/lil-gui.module.min.js";
-import audioManager from "../sfx/audio";
-import { resources } from "../block/blocks";
+import audioManager from "../sfx/musicPlayer";
+import { resources } from "../world/blocks/blocks";
 
 export function createUI(world, player) {
   const gui = new GUI();

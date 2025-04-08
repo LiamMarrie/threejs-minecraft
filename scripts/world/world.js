@@ -1,9 +1,9 @@
 import * as THREE from "three";
 import { SimplexNoise } from "three/examples/jsm/math/SimplexNoise.js";
 
-import { RNG } from "./rng";
+import { RNG } from "../utils/rng";
 
-import { blocks, resources } from "./block/blocks";
+import { blocks, resources } from "./blocks/blocks";
 
 const geometry = new THREE.BoxGeometry();
 
