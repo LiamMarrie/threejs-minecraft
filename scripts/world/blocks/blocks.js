@@ -13,12 +13,12 @@ function loadTexture(path) {
 
 // define texture types
 const textures = {
-  dirt: loadTexture("textures/dirt.png"),
-  grass: loadTexture("textures/grass.png"),
-  grassSide: loadTexture("textures/grass_side.png"),
-  stone: loadTexture("textures/stone.png"),
-  coalOre: loadTexture("textures/coal_ore.png"),
-  ironOre: loadTexture("textures/iron_ore.png"),
+  dirt: loadTexture("textures/blocks/dirt.png"),
+  grass: loadTexture("textures/blocks/grass.png"),
+  grassSide: loadTexture("textures/blocks/grass_side.png"),
+  stone: loadTexture("textures/blocks/stone.png"),
+  coalOre: loadTexture("textures/blocks/coal_ore.png"),
+  ironOre: loadTexture("textures/blocks/iron_ore.png"),
 };
 
 // block types
