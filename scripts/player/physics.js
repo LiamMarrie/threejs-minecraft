@@ -17,9 +17,18 @@ import { blocks } from "../world/blocks/blocks";
  *  - zero player velocity
  */
 
+const collisionMaterial = new THREE.MeshBasicMaterial({
+  color: 0xff0000,
+  transparent: true,
+  opacity: 0.2,
+});
+
+const collisionGeometry = new THREE.BoxGeometry(1.001, 1.001, 1.001);
+
 export class Physics {
-  constructor() {
-    //hello world!
+  constructor(scene) {
+    this.helpers = new THREE.Group();
+    scene.add(this.helpers);
   }
 
   /**
@@ -87,7 +96,9 @@ export class Physics {
           const block = world.getBlock(x, y, z); // get block at the x, y, z position
 
           if (block && block.id !== blocks.empty.id) {
-            candidates.push(block);
+            const blockPosition = { x, y, z };
+            candidates.push(blockPosition);
+            this.addCollisionHelper(blockPosition);
           }
         }
       }
@@ -106,5 +117,16 @@ export class Physics {
 
   resolveCollisions(collisions) {
     // Implement collision resolution.
+  }
+
+  /**
+   * highlights block the player is colliding with
+   *
+   * @param { THREE.Object3D } block
+   */
+  addCollisionHelper(block) {
+    const blockMesh = new THREE.Mesh(collisionGeometry, collisionMaterial);
+    blockMesh.position.copy(block);
+    this.helpers.add(blockMesh);
   }
 }

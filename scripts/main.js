@@ -64,7 +64,7 @@ function initGame(worldParams) {
 
   player = new Player(scene);
 
-  physics = new Physics();
+  physics = new Physics(scene);
 
   setupLights();
   createUI(world, player);

@@ -173,7 +173,7 @@ export class World extends THREE.Group {
           const instanceId = mesh.count;
 
           if (!this.isBlockHidden(x, y, z)) {
-            matrix.setPosition(x + 0.5, y + 0.5, z + 0.5);
+            matrix.setPosition(x, y, z);
             mesh.setMatrixAt(instanceId, matrix); // set transformation matrix for each instance. start at 0 instance. set mesh count at index 0 to the matrix.....
             this.setBlockInstanceId(x, y, z, instanceId);
             mesh.count++;
