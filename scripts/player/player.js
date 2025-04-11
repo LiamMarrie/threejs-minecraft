@@ -12,6 +12,9 @@ import * as THREE from "three";
 import { PointerLockControls } from "three/addons/controls/PointerLockControls.js";
 
 export class Player {
+  radius = 0.5;
+  height = 1.75;
+
   maxSpeed = 10;
   input = new THREE.Vector3(); // store direction player should move based on key input
   velocity = new THREE.Vector3();
@@ -34,6 +37,13 @@ export class Player {
     document.addEventListener("keydown", this.onKeyDown.bind(this));
     document.addEventListener("keyup", this.onKeyUp.bind(this));
 
+    // wireframe mesh visual for player bounding cylinder AKA steve in the future at some point idk???
+    this.boundsHelper = new THREE.Mesh(
+      new THREE.CylinderGeometry(this.radius, this.radius, this.height, 16),
+      new THREE.MeshBasicMaterial({ wireframe: true })
+    );
+    scene.add(this.boundsHelper);
+
     // Handle window resizing
     window.addEventListener("resize", () => {
       this.camera.aspect = window.innerWidth / window.innerHeight;
@@ -52,6 +62,15 @@ export class Player {
       document.getElementById("player-position").innerHTML =
         this.playerPosition();
     }
+  }
+
+  /**
+   * update the position of the players bounding cylinder to move with the game camera
+   *
+   */
+  updateBoundsHelper() {
+    this.boundsHelper.position.copy(this.position);
+    this.boundsHelper.position.y -= this.height / 2;
   }
 
   /**

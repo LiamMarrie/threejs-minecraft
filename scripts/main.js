@@ -8,8 +8,9 @@ import { createUI } from "./ui/ui.js";
 import { createLandingScreen } from "./screens/landing.js";
 import audioManager from "./sfx/musicPlayer.js";
 import { Player } from "./player/player.js";
+import { Physics } from "./player/physics.js";
 
-let stats, renderer, orbitCamera, controls, scene, world, player;
+let stats, renderer, orbitCamera, controls, scene, world, player, physics;
 
 function initGame(worldParams) {
   stats = new Stats();
@@ -63,6 +64,8 @@ function initGame(worldParams) {
 
   player = new Player(scene);
 
+  physics = new Physics();
+
   setupLights();
   createUI(world, player);
   animate();
@@ -105,6 +108,8 @@ function animate() {
 
   requestAnimationFrame(animate);
   player.applyInputs(dt);
+  player.updateBoundsHelper();
+  physics.update(dt, player, world);
   renderer.render(
     scene,
     player.controls.isLocked ? player.camera : orbitCamera
