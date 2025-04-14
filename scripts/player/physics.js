@@ -108,11 +108,63 @@ export class Physics {
     return candidates;
   }
 
-  // Implement narrowPhase for collision detection.
+  /**
+   * 1. get point on block closest to player
+   *
+   * 2. determine if point is insides player bounding cylinder
+   *
+   * 3. if true compute:
+   *  - contact point
+   *  - overlap ( amount to move player back from block )
+   *  - collision normal ( angle of collision )
+   */
   narrowPhase(candidates, player) {
-    // For now, just return an empty array (no collisions)
-    // Replace with your collision detection logic.
-    return [];
+    const collisions = [];
+
+    for (const block of candidates) {
+      //
+      const p = player.position;
+      const closestPoint = {
+        x: Math.max(block.x - 0.5, Math.min(p.x, block.x + 0.5)),
+        y: Math.max(
+          block.y - 0.5,
+          Math.min(p.y - player.height / 2, block.y + 0.5)
+        ),
+        z: Math.max(block.z - 0.5, Math.min(p.z, block.z + 0.5)),
+      };
+
+      // calc distance along each axis between closest point to the center of the player bounding cylinder
+      const dx = closestPoint.x - player.position.x;
+      const dy = closestPoint.y - (player.position.y - player.height / 2);
+      const dz = closestPoint.z - player.position.z;
+
+      if (this.pointInPlayerBoundingCylinder(closestPoint, player)) {
+        //compute the overlap between the point and the players bounding cylinder along the y axis and in the xz plane
+        const overlapY = player.height / 2 - Math.abs(dy);
+        const overlapXZ = player.radius - Math.sqrt(dx * dx + dz * dz);
+
+        // compute the normal of the collision ( point away from the contact point )
+        let normal, overlap;
+        if (overlapY < overlapXZ) {
+          normal = new THREE.Vector3(0, -Math.sign(dy), 0);
+          overlap = overlapY;
+        } else {
+          normal = new THREE.Vector3(-dx, 0, -dz).normalize();
+          overlap = overlapXZ;
+        }
+
+        collisions.push({
+          block,
+          contactPoint: closestPoint,
+          normal,
+          overlap,
+        });
+      }
+    }
+
+    console.log(`NarrowPhase Collisions: ${collisions.length}`);
+
+    return collisions;
   }
 
   resolveCollisions(collisions) {
@@ -128,5 +180,28 @@ export class Physics {
     const blockMesh = new THREE.Mesh(collisionGeometry, collisionMaterial);
     blockMesh.position.copy(block);
     this.helpers.add(blockMesh);
+  }
+
+  /**
+   *
+   * returns true if the point 'p' is inside the players bounding cylinder
+   *
+   * @param {{ x: number, y: number, z: number }} p
+   *
+   * @param { Player } player
+   *
+   * @returns { boolean }
+   *
+   */
+  pointInPlayerBoundingCylinder(p, player) {
+    const dx = p.x - player.position.x;
+    const dy = p.y - (player.position.y - player.height / 2);
+    const dz = p.z - player.position.z;
+    const r_sq = dx * dx + dz * dz;
+
+    // check the contact point
+    return (
+      Math.abs(dy) < player.height / 2 && r_sq < player.radius * player.radius
+    );
   }
 }

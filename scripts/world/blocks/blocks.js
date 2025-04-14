@@ -19,6 +19,8 @@ const textures = {
   stone: loadTexture("textures/blocks/stone.png"),
   coalOre: loadTexture("textures/blocks/coal_ore.png"),
   ironOre: loadTexture("textures/blocks/iron_ore.png"),
+  sand: loadTexture("textures/blocks/sand.png"),
+  water: loadTexture("textures/blocks/water_still.png"),
 };
 
 // block types
@@ -81,6 +83,21 @@ export const blocks = {
     },
     scarcity: 0.9,
     material: new THREE.MeshLambertMaterial({ map: textures.ironOre }),
+  },
+  sand: {
+    id: 6,
+    name: "sand",
+    material: new THREE.MeshLambertMaterial({ map: textures.sand }),
+  },
+
+  water: {
+    id: 7,
+    name: "water",
+    material: new THREE.MeshLambertMaterial({
+      map: textures.water,
+      transparent: true,
+      opacity: 0.7,
+    }),
   },
 };
 
