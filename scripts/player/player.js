@@ -18,6 +18,7 @@ export class Player {
   maxSpeed = 10;
   input = new THREE.Vector3(); // store direction player should move based on key input
   velocity = new THREE.Vector3();
+  #worldVelocity = new THREE.Vector3();
 
   constructor(scene) {
     this.camera = new THREE.PerspectiveCamera(
@@ -51,6 +52,31 @@ export class Player {
     });
   }
 
+  /**
+   *
+   * returns the velo of the player in the world coordinates
+   *
+   * @returns {THREE.Vector3}
+   *
+   */
+  get worldVelocity() {
+    this.#worldVelocity.copy(this.velocity);
+    this.#worldVelocity.applyEuler(
+      new THREE.Euler(0, this.camera.rotation.y, 0)
+    );
+    return this.#worldVelocity;
+  }
+
+  /**
+   * applies a change in velo 'dv' that is specified in the world frame
+   *
+   * @param {THREE.Vector3} dv
+   */
+  applyWorldDeltaVelocity(dv) {
+    dv.applyEuler(new THREE.Euler(0, -this.camera.rotation.y, 0));
+    this.velocity.add(dv);
+  }
+
   applyInputs(dt) {
     if (this.controls.isLocked) {
       this.velocity.x = this.input.x;
@@ -58,6 +84,7 @@ export class Player {
       this.controls.moveRight(this.velocity.x * dt); // change in distance left or right
       this.controls.moveForward(this.velocity.z * dt); // forward or backward
 
+      this.position.y += this.velocity.y * dt;
       //player position
       document.getElementById("player-position").innerHTML =
         this.playerPosition();

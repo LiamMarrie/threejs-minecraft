@@ -25,7 +25,16 @@ const collisionMaterial = new THREE.MeshBasicMaterial({
 
 const collisionGeometry = new THREE.BoxGeometry(1.001, 1.001, 1.001);
 
+const contactMaterial = new THREE.MeshBasicMaterial({
+  wireframe: true,
+  color: 0x00ff00,
+});
+
+const contactGeometry = new THREE.SphereGeometry(0.05, 6, 6);
+
 export class Physics {
+  gravity = 32;
+
   constructor(scene) {
     this.helpers = new THREE.Group();
     scene.add(this.helpers);
@@ -44,6 +53,10 @@ export class Physics {
    *
    */
   update(dt, player, world) {
+    this.helpers.clear();
+    player.velocity.y -= this.gravity * dt;
+    player.applyInputs(dt);
+    player.updateBoundsHelper();
     this.detectCollisions(player, world);
   }
 
@@ -58,7 +71,7 @@ export class Physics {
     const collisions = this.narrowPhase(candidates, player);
 
     if (collisions.length > 0) {
-      this.resolveCollisions(collisions);
+      this.resolveCollisions(collisions, player);
     }
   }
 
@@ -103,8 +116,6 @@ export class Physics {
         }
       }
     }
-    console.log(`broad phase candidates: ${candidates.length} `);
-
     return candidates;
   }
 
@@ -159,6 +170,8 @@ export class Physics {
           normal,
           overlap,
         });
+
+        this.addContactPointHelper(closestPoint);
       }
     }
 
@@ -167,8 +180,33 @@ export class Physics {
     return collisions;
   }
 
-  resolveCollisions(collisions) {
-    // Implement collision resolution.
+  /**
+   * resolves each of the collisions found in the narrow phase
+   * @param {object} collisions
+   *
+   * @param {Player} player
+   *
+   */
+  resolveCollisions(collisions, player) {
+    collisions.sort((a, b) => {
+      return a.overlap < b.overlap;
+    });
+
+    for (const collision of collisions) {
+      // adjust player position so its no longer overlapping
+      let deltaPosition = collision.normal.clone();
+      deltaPosition.multiplyScalar(collision.overlap);
+      player.position.add(deltaPosition);
+
+      // negate player velo along collision normal
+      let magnitude = player.worldVelocity.dot(collision.normal); // get the magnitude of the player velo along the collision normal
+      let velocityAdjustment = collision.normal
+        .clone()
+        .multiplyScalar(magnitude); // remove that part of the velo from the players velo
+
+      // apply
+      player.applyWorldDeltaVelocity(velocityAdjustment.negate());
+    }
   }
 
   /**
@@ -180,6 +218,20 @@ export class Physics {
     const blockMesh = new THREE.Mesh(collisionGeometry, collisionMaterial);
     blockMesh.position.copy(block);
     this.helpers.add(blockMesh);
+  }
+
+  /**
+   *
+   * visualizes the contact at the point 'p'
+   *
+   * @param {{ x, y, z }} p
+   *
+   *
+   */
+  addContactPointHelper(p) {
+    const contactMesh = new THREE.Mesh(contactGeometry, contactMaterial);
+    contactMesh.position.copy(p);
+    this.helpers.add(contactMesh);
   }
 
   /**

@@ -107,8 +107,6 @@ function animate() {
   let dt = (currentTime - previousTime) / 1000; // dt needs to be in seconds not mil
 
   requestAnimationFrame(animate);
-  player.applyInputs(dt);
-  player.updateBoundsHelper();
   physics.update(dt, player, world);
   renderer.render(
     scene,
