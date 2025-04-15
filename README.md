@@ -1,5 +1,5 @@
 <div>
-    <img src="/public/favicon-16x16.png" alt="logo" width="80" height="80">
+    <img src="/public/favicon-32x32.png" alt="logo">
 </div>
 
 # MINECRAFT THREEJS EDITION
