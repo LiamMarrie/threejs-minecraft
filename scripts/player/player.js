@@ -14,8 +14,11 @@ import { PointerLockControls } from "three/addons/controls/PointerLockControls.j
 export class Player {
   radius = 0.5;
   height = 1.75;
+  maxSpeed = 5;
 
-  maxSpeed = 10;
+  jumpSpeed = 10;
+  onGround = false;
+
   input = new THREE.Vector3(); // store direction player should move based on key input
   velocity = new THREE.Vector3();
   #worldVelocity = new THREE.Vector3();
@@ -156,6 +159,10 @@ export class Player {
         this.position.set(32, 16, 32);
         this.velocity.set(0, 0, 0);
         break;
+      case "Space":
+        if (this.onGround) {
+          this.velocity.y += this.jumpSpeed;
+        }
     }
   }
 

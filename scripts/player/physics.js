@@ -67,6 +67,7 @@ export class Physics {
    *
    */
   detectCollisions(player, world) {
+    player.onGround = false;
     const candidates = this.broadPhase(player, world); //
     const collisions = this.narrowPhase(candidates, player);
 
@@ -133,7 +134,7 @@ export class Physics {
     const collisions = [];
 
     for (const block of candidates) {
-      //
+      // get point on the block that is closest to the center of the players bounding cylinder
       const p = player.position;
       const closestPoint = {
         x: Math.max(block.x - 0.5, Math.min(p.x, block.x + 0.5)),
@@ -159,6 +160,7 @@ export class Physics {
         if (overlapY < overlapXZ) {
           normal = new THREE.Vector3(0, -Math.sign(dy), 0);
           overlap = overlapY;
+          player.onGround = true;
         } else {
           normal = new THREE.Vector3(-dx, 0, -dz).normalize();
           overlap = overlapXZ;
@@ -175,8 +177,6 @@ export class Physics {
       }
     }
 
-    console.log(`NarrowPhase Collisions: ${collisions.length}`);
-
     return collisions;
   }
 
@@ -188,6 +188,8 @@ export class Physics {
    *
    */
   resolveCollisions(collisions, player) {
+    // find collisions in order of the smallest to biggest overlap
+
     collisions.sort((a, b) => {
       return a.overlap < b.overlap;
     });
@@ -200,6 +202,7 @@ export class Physics {
 
       // negate player velo along collision normal
       let magnitude = player.worldVelocity.dot(collision.normal); // get the magnitude of the player velo along the collision normal
+
       let velocityAdjustment = collision.normal
         .clone()
         .multiplyScalar(magnitude); // remove that part of the velo from the players velo

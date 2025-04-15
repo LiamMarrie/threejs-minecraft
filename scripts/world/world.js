@@ -5,6 +5,8 @@ import { RNG } from "../utils/rng";
 
 import { blocks, resources } from "./blocks/blocks";
 
+import { Sky } from "./environment/sky";
+
 const geometry = new THREE.BoxGeometry();
 
 /**
@@ -42,6 +44,14 @@ export class World extends THREE.Group {
     // default values
     super();
     this.size = size;
+    this.data = [];
+
+    // day and night cycle properties
+    this.time = 0;
+    this.dayDuration = 240;
+
+    // sky and lighting properties
+    this.initSkyAndLights();
   }
   /**
    * generates the world data and meshes
@@ -52,6 +62,28 @@ export class World extends THREE.Group {
     this.generateResources(rng);
     this.generateTerrain(rng);
     this.generateMeshes();
+  }
+
+  /**
+   * initialize sky data
+   */
+  initSkyAndLights() {
+    this.sky = new Sky();
+
+    this.sky.scale.setScalar(450000);
+    this.add(this.sky);
+
+    //sun vector
+    this.sun = new THREE.Vector3();
+
+    // ambient light for base illumination
+    this.ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    this.add(this.ambientLight);
+
+    // directional light to represent the sun
+    this.sunLight = new THREE.DirectionalLight(0xffffff, 1);
+    this.sunLight.castShadow = true;
+    this.add(this.sunLight);
   }
 
   /**
@@ -182,6 +214,51 @@ export class World extends THREE.Group {
       }
     }
     this.add(...Object.values(meshes));
+  }
+
+  /**
+   * update method to be called on every frame
+   * delta is the elapsed time in seconds since the last frame
+   */
+  update(delta) {
+    // Update the internal time
+    this.time += delta;
+    // Calculate the time within a full day cycle
+    const dayTime = this.time % this.dayDuration;
+    // Convert to a full circle (2π for a complete cycle)
+    const sunAngle = (dayTime / this.dayDuration) * Math.PI * 2;
+
+    // Update the sun's position: here it moves in a circular path.
+    // You can further adjust this for elevation offset
+    this.sun.x = Math.sin(sunAngle);
+    this.sun.y = Math.cos(sunAngle);
+    this.sun.z = 0; // You might add variation here for a more dynamic cycle
+
+    // --- Update sky shader uniforms ---
+    // Assumes that your sky.js exposes a material with a sunPosition uniform.
+    if (
+      this.sky.material &&
+      this.sky.material.uniforms &&
+      this.sky.material.uniforms["sunPosition"]
+    ) {
+      this.sky.material.uniforms["sunPosition"].value.copy(this.sun);
+    }
+
+    // --- Update the sun light ---
+    // Position the directional light with the sun vector so shadows match up.
+    this.sunLight.position.copy(this.sun);
+
+    // Adjust the light intensities based on the sun elevation.
+    // When the sun is low (or below the horizon), lower the intensities for a night effect.
+    if (this.sun.y < 0) {
+      this.sunLight.intensity = 0.2;
+      this.ambientLight.intensity = 0.1;
+    } else {
+      this.sunLight.intensity = 1;
+      this.ambientLight.intensity = 0.5;
+    }
+
+    // You can add more effects here (fog color changes, ambient color adjustments, etc.)
   }
 
   /**
