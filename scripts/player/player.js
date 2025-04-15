@@ -116,32 +116,6 @@ export class Player {
    * @param {KeyboardEvent} event
    */
   onKeyDown(event) {
-    if (!this.controls.isLocked) {
-      this.controls.lock();
-      console.log();
-    }
-
-    switch (event.code) {
-      case "KeyW":
-        this.input.z = 0;
-        break;
-      case "KeyA":
-        this.input.x = 0;
-        break;
-      case "KeyS":
-        this.input.z = 0;
-        break;
-      case "KeyD":
-        this.input.x = 0;
-        break;
-    }
-  }
-
-  /**
-   * event handler for keyup
-   * @param {KeyboardEvent} event
-   */
-  onKeyUp(event) {
     switch (event.code) {
       case "KeyW":
         this.input.z = this.maxSpeed;
@@ -156,13 +130,46 @@ export class Player {
         this.input.x = this.maxSpeed;
         break;
       case "KeyR":
-        this.position.set(32, 16, 32);
+        if (this.repeat) break;
+        this.position.set(32, 10, 32);
         this.velocity.set(0, 0, 0);
         break;
       case "Space":
         if (this.onGround) {
           this.velocity.y += this.jumpSpeed;
         }
+        break;
+    }
+  }
+
+  /**
+   * event handler for keyup
+   * @param {KeyboardEvent} event
+   */
+  onKeyUp(event) {
+    switch (event.code) {
+      case "Escape":
+        if (event.repeat) break;
+        if (this.controls.isLocked) {
+          console.log("unlocking controls");
+          this.controls.unlock();
+        } else {
+          console.log("locking controls");
+          this.controls.lock();
+        }
+        break;
+      case "KeyW":
+        this.input.z = 0;
+        break;
+      case "KeyA":
+        this.input.x = 0;
+        break;
+      case "KeyS":
+        this.input.z = 0;
+        break;
+      case "KeyD":
+        this.input.x = 0;
+        break;
     }
   }
 

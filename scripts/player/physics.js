@@ -33,6 +33,9 @@ const contactMaterial = new THREE.MeshBasicMaterial({
 const contactGeometry = new THREE.SphereGeometry(0.05, 6, 6);
 
 export class Physics {
+  simulationRate = 200;
+  timeStep = 1 / this.simulationRate;
+  accumulator = 0;
   gravity = 32;
 
   constructor(scene) {
@@ -53,11 +56,16 @@ export class Physics {
    *
    */
   update(dt, player, world) {
-    this.helpers.clear();
-    player.velocity.y -= this.gravity * dt;
-    player.applyInputs(dt);
-    player.updateBoundsHelper();
-    this.detectCollisions(player, world);
+    this.accumulator += dt;
+
+    while (this.accumulator >= this.timeStep) {
+      this.helpers.clear();
+      player.velocity.y -= this.gravity * this.timeStep;
+      player.applyInputs(this.timeStep);
+      player.updateBoundsHelper();
+      this.detectCollisions(player, world);
+      this.accumulator -= this.timeStep;
+    }
   }
 
   /**
@@ -195,6 +203,10 @@ export class Physics {
     });
 
     for (const collision of collisions) {
+      // recheck if the contact point is inside the players bounding cylinder for each collision since the player position is updated after each collision is resolved
+      if (!this.pointInPlayerBoundingCylinder(collision.contactPoint, player))
+        continue;
+
       // adjust player position so its no longer overlapping
       let deltaPosition = collision.normal.clone();
       deltaPosition.multiplyScalar(collision.overlap);
