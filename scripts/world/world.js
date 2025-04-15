@@ -247,11 +247,11 @@ export class World extends THREE.Group {
         meshes[blockType.id] = mesh; // add block id to meshes table
       });
 
-    const matrix = new THREE.Matrix4(); // stores position of each block
+    const matrix = new THREE.Matrix4();
     for (let x = 0; x < this.size.width; x++) {
       for (let y = 0; y < this.totalHeight; y++) {
         for (let z = 0; z < this.size.width; z++) {
-          const blockId = this.getBlock(x, y, z).id; // get block id
+          const blockId = this.getBlock(x, y, z).id;
           if (blockId === blocks.empty.id) continue;
           const mesh = meshes[blockId];
           const instanceId = mesh.count;
