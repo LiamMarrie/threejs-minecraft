@@ -115,7 +115,7 @@ export class Physics {
     for (let x = extents.x.min; x <= extents.x.max; x++) {
       for (let y = extents.y.min; y <= extents.y.max; y++) {
         for (let z = extents.z.min; z <= extents.z.max; z++) {
-          const block = world.getBlock(x, y, z); // get block at the x, y, z position
+          const block = world.getBlock(x, y + world.undergroundDepth, z); // get block at the x, y, z position
 
           if (block && block.id !== blocks.empty.id) {
             const blockPosition = { x, y, z };

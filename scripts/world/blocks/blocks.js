@@ -21,6 +21,7 @@ const textures = {
   ironOre: loadTexture("textures/blocks/iron_ore.png"),
   sand: loadTexture("textures/blocks/sand.png"),
   water: loadTexture("textures/blocks/water_still.png"),
+  bedrock: loadTexture("textures/blocks/bedrock.png"),
 };
 
 // block types
@@ -97,6 +98,13 @@ export const blocks = {
       map: textures.water,
       transparent: true,
       opacity: 0.7,
+    }),
+  },
+  bedrock: {
+    id: 8,
+    name: "bedrock",
+    material: new THREE.MeshLambertMaterial({
+      map: textures.bedrock,
     }),
   },
 };

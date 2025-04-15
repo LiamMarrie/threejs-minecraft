@@ -59,8 +59,9 @@ export class World extends THREE.Group {
   generate() {
     const rng = new RNG(this.params.seed);
     this.initializeTerrain();
-    this.generateResources(rng);
-    this.generateTerrain(rng);
+    this.generateResources();
+    this.generateUnderground(rng);
+    this.generateOverworld(rng);
     this.generateMeshes();
   }
 
@@ -90,23 +91,21 @@ export class World extends THREE.Group {
    * initial world terrain data
    */
   initializeTerrain() {
-    // underground cave system generation
     this.undergroundDepth = 20;
-
-    const totalHeight = (this.size.height = this.undergroundDepth);
+    // this.size.height now represents the overworld part only.
+    this.totalHeight = this.undergroundDepth + this.size.height; // total vertical layers
 
     this.data = []; // clear data array (resets world)
     for (let x = 0; x < this.size.width; x++) {
       const slice = [];
-      // index 0 = y = -undergroundDepth
-      // index undergroundDepth = y = 0
-      for (let y = 0; y < totalHeight; y++) {
+      // allocate totalHeight vertical layers.
+      for (let y = 0; y < this.totalHeight; y++) {
         const row = [];
         for (let z = 0; z < this.size.width; z++) {
           row.push({
             id: blocks.empty.id,
             instanceId: null,
-          }); // default object for block
+          });
         }
         slice.push(row);
       }
@@ -122,15 +121,18 @@ export class World extends THREE.Group {
     const simplex = new SimplexNoise(rng);
     resources.forEach((resource) => {
       for (let x = 0; x < this.size.width; x++) {
-        for (let y = 0; y < this.size.width; y++) {
+        for (let y = 1; y < this.undergroundDepth; y++) {
           for (let z = 0; z < this.size.width; z++) {
-            const value = simplex.noise3d(
-              x / resource.scale.x,
-              y / resource.scale.y,
-              z / resource.scale.z
-            );
-            if (value > resource.scarcity) {
-              this.setBlockId(x, y, z, resource.id);
+            // only place resources if the current block is stone ( for now )
+            if (this.getBlock(x, y, z)?.id === blocks.stone.id) {
+              const value = simplex.noise3d(
+                x / resource.scale.x,
+                y / resource.scale.y,
+                z / resource.scale.z
+              );
+              if (value > resource.scarcity) {
+                this.setBlockId(x, y, z, resource.id);
+              }
             }
           }
         }
@@ -138,15 +140,47 @@ export class World extends THREE.Group {
     });
   }
 
+  generateUnderground(rng) {
+    const caveSimplex = new SimplexNoise(rng);
+    const caveScale = 20;
+    const caveThreshold = 0.3;
+
+    for (let x = 0; x < this.size.width; x++) {
+      for (let z = 0; z < this.size.width; z++) {
+        this.setBlockId(
+          x,
+          0,
+          z,
+          blocks.bedrock ? blocks.bedrock.id : blocks.stone.id
+        );
+        for (let y = 1; y < this.undergroundDepth; y++) {
+          const caveValue = caveSimplex.noise3d(
+            x / caveScale,
+            y / caveScale,
+            z / caveScale
+          );
+          if (caveValue > caveThreshold) {
+            this.setBlockId(x, y, z, blocks.empty.id);
+          } else {
+            this.setBlockId(x, y, z, blocks.stone.id);
+          }
+        }
+      }
+    }
+  }
+
   /**
    * generates the terrain data for the world
    */
-  generateTerrain(rng) {
+  generateOverworld(rng) {
     const simplex = new SimplexNoise(rng);
-    // get height at each x and z location. this helps with seed regeneration.
+    const patchNoise = new SimplexNoise(rng);
+
+    const DIRT_LAYER_DEPTH = 4;
+
     for (let x = 0; x < this.size.width; x++) {
       for (let z = 0; z < this.size.width; z++) {
-        // need to be able to adjust x n z based on terrain params
+        // 2D noise for surface
         const value = simplex.noise(
           // bigger the scale the less the noise will change over a distance
           x / this.params.terrain.scale,
@@ -156,19 +190,34 @@ export class World extends THREE.Group {
         // scale the noise based on the magnitude and offset
         const scaledNoise =
           this.params.terrain.offset + this.params.terrain.magnitude * value;
+        let surfaceHeight = Math.floor(this.size.height * scaledNoise);
+        surfaceHeight = Math.max(
+          0,
+          Math.min(surfaceHeight, this.size.height - 1)
+        );
 
-        let height = Math.floor(this.size.height * scaledNoise); // computes the height of the terrain. want integer
+        // actual array index
+        const surfaceIndex = this.undergroundDepth + surfaceHeight;
 
-        height = Math.max(0, Math.min(height, this.size.height - 1)); // clamp height between 0 and max height
+        // place grass
+        this.setBlockId(x, surfaceIndex, z, blocks.grass.id);
 
-        //fills all blocks at or below the terrain height
-        for (let y = 0; y <= this.size.height; y++) {
-          if (y < height && this.getBlock(x, y, z).id === blocks.empty.id) {
-            this.setBlockId(x, y, z, blocks.dirt.id);
-          } else if (y === height) {
-            this.setBlockId(x, y, z, blocks.grass.id);
-          } else if (y > height) {
-            this.setBlockId(x, y, z, blocks.empty.id);
+        // fill down from surfaceIndex-1
+        for (let y = surfaceIndex - 1; y >= this.undergroundDepth; y--) {
+          if (this.getBlock(x, y, z).id === blocks.empty.id) {
+            const depthBelowSurface = surfaceIndex - y;
+            if (depthBelowSurface <= DIRT_LAYER_DEPTH) {
+              // top few layers are dirt
+              this.setBlockId(x, y, z, blocks.dirt.id);
+            } else {
+              // mostly stone with random dirt patches
+              const val = patchNoise.noise3d(x * 0.1, y * 0.1, z * 0.1);
+              if (val > 0.7) {
+                this.setBlockId(x, y, z, blocks.dirt.id);
+              } else {
+                this.setBlockId(x, y, z, blocks.stone.id);
+              }
+            }
           }
         }
       }
@@ -182,12 +231,9 @@ export class World extends THREE.Group {
   generateMeshes() {
     this.clear();
 
-    // need to keep track of max count and current count. cannot go over max count limit
-    const maxCount = this.size.width * this.size.width * this.size.height; // width squared x height = total num of "blocks"
+    const maxCount = this.size.width * this.size.width * this.totalHeight;
 
-    // create lookup table where the key is the block id
     const meshes = {};
-
     Object.values(blocks)
       .filter((blockType) => blockType.id !== blocks.empty.id)
       .forEach((blockType) => {
@@ -203,20 +249,17 @@ export class World extends THREE.Group {
 
     const matrix = new THREE.Matrix4(); // stores position of each block
     for (let x = 0; x < this.size.width; x++) {
-      for (let y = 0; y < this.size.height; y++) {
+      for (let y = 0; y < this.totalHeight; y++) {
         for (let z = 0; z < this.size.width; z++) {
           const blockId = this.getBlock(x, y, z).id; // get block id
           if (blockId === blocks.empty.id) continue;
-
           const mesh = meshes[blockId];
           const instanceId = mesh.count;
-
-          if (!this.isBlockHidden(x, y, z)) {
-            matrix.setPosition(x, y, z);
-            mesh.setMatrixAt(instanceId, matrix); // set transformation matrix for each instance. start at 0 instance. set mesh count at index 0 to the matrix.....
-            this.setBlockInstanceId(x, y, z, instanceId);
-            mesh.count++;
-          }
+          // Adjust the y position to convert the array index into the "real" world coordinate.
+          matrix.setPosition(x, y - this.undergroundDepth, z);
+          mesh.setMatrixAt(instanceId, matrix);
+          this.setBlockInstanceId(x, y, z, instanceId);
+          mesh.count++;
         }
       }
     }
@@ -226,6 +269,8 @@ export class World extends THREE.Group {
   /**
    * update method to be called on every frame
    * delta is the elapsed time in seconds since the last frame
+   *
+   * * day and night cycle at some point maybe......
    */
   update(delta) {
     // Update the internal time
@@ -264,8 +309,6 @@ export class World extends THREE.Group {
       this.sunLight.intensity = 1;
       this.ambientLight.intensity = 0.5;
     }
-
-    // You can add more effects here (fog color changes, ambient color adjustments, etc.)
   }
 
   /**
@@ -329,19 +372,14 @@ export class World extends THREE.Group {
    * @returns {boolean}
    */
   inBounds(x, y, z) {
-    if (
+    return (
       x >= 0 &&
       x < this.size.width &&
       y >= 0 &&
-      y < this.size.height &&
+      y < this.totalHeight && // <-- using totalHeight fixes the bounds checking
       z >= 0 &&
       z < this.size.width
-    ) {
-      // checks to ensure the coords are within the bounds
-      return true;
-    } else {
-      return false;
-    }
+    );
   }
 
   /**
