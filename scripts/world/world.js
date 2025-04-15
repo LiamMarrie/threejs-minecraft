@@ -90,10 +90,17 @@ export class World extends THREE.Group {
    * initial world terrain data
    */
   initializeTerrain() {
+    // underground cave system generation
+    this.undergroundDepth = 20;
+
+    const totalHeight = (this.size.height = this.undergroundDepth);
+
     this.data = []; // clear data array (resets world)
     for (let x = 0; x < this.size.width; x++) {
       const slice = [];
-      for (let y = 0; y < this.size.height; y++) {
+      // index 0 = y = -undergroundDepth
+      // index undergroundDepth = y = 0
+      for (let y = 0; y < totalHeight; y++) {
         const row = [];
         for (let z = 0; z < this.size.width; z++) {
           row.push({
