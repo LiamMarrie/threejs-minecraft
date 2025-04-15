@@ -95,7 +95,7 @@ export class World extends THREE.Group {
     // this.size.height now represents the overworld part only.
     this.totalHeight = this.undergroundDepth + this.size.height; // total vertical layers
 
-    this.data = []; // clear data array (resets world)
+    this.data = []; // clear the data array
     for (let x = 0; x < this.size.width; x++) {
       const slice = [];
       // allocate totalHeight vertical layers.
@@ -182,12 +182,10 @@ export class World extends THREE.Group {
       for (let z = 0; z < this.size.width; z++) {
         // 2D noise for surface
         const value = simplex.noise(
-          // bigger the scale the less the noise will change over a distance
           x / this.params.terrain.scale,
           z / this.params.terrain.scale
         );
 
-        // scale the noise based on the magnitude and offset
         const scaledNoise =
           this.params.terrain.offset + this.params.terrain.magnitude * value;
         let surfaceHeight = Math.floor(this.size.height * scaledNoise);
@@ -243,8 +241,8 @@ export class World extends THREE.Group {
           maxCount
         );
         mesh.name = blockType.name;
-        mesh.count = 0; // curr num of instances. contains total num of instances once for loop is complete
-        meshes[blockType.id] = mesh; // add block id to meshes table
+        mesh.count = 0;
+        meshes[blockType.id] = mesh;
       });
 
     const matrix = new THREE.Matrix4();
