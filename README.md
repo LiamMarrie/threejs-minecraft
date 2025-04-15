@@ -1,7 +1,6 @@
-<div>
-    <img src="/public/textures/menu background/Minecraft-Logo-2011.png" alt="logo">
-</div>
+![Logo](public/logo.png)
 
 # MINECRAFT THREEJS EDITION
 
-minecraft clone built using THREE.js :)
+A web-based Minecraft clone THREE.js and vanilla JavaScript.
+<a href="https://threejs-minecraft-gold.vercel.app/">Try it out!</a>
