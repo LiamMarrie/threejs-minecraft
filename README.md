@@ -2,5 +2,5 @@
 
 # MINECRAFT THREEJS EDITION
 
-A web-based Minecraft clone THREE.js and vanilla JavaScript.
+A web-based Minecraft clone using THREE.js and vanilla JavaScript.
 <a href="https://threejs-minecraft-gold.vercel.app/">Try it out!</a>
