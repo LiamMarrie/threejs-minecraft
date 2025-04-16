@@ -47,7 +47,7 @@ export function createNewWorldScreen({ onCreateWorld, onCancel }) {
       left: 0;
       width: 100%;
       height: 100%;
-      background-image: url('../../public/textures/menu background/Overworld_background.png');
+      background-image: url('/images/Overworld_background.png');
       background-size: cover;
       font-family: monocraft, Consolas, 'Courier New', monospace;
       display: flex;

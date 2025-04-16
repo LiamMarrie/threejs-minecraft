@@ -16,7 +16,7 @@ export function createLandingScreen({ onNewWorld, onLoadWorld }) {
   landingScreen.innerHTML = `
     <div class="minecraft-container">
       <div class="logo-container">
-        <img class="minecraft-logo" src="../../public/textures/menu background/Minecraft-Logo-2011.png" alt="Minecraft">
+        <img class="minecraft-logo" src="/images/Minecraft-Logo-2011.png" alt="Minecraft">
         <span class="splash-text" id="splash-text">
         </span>
       </div>
@@ -60,7 +60,7 @@ export function createLandingScreen({ onNewWorld, onLoadWorld }) {
       left: 0;
       width: 100%;
       height: 100%;
-      background-image: url('../../public//textures/menu background/background-world.jpg');
+      background-image: url('/images/background-world.jpg');
       background-size: cover;
       font-family: monocraft, Consolas, 'Courier New', monospace;
       display: flex;
