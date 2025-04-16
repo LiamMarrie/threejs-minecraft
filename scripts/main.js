@@ -20,6 +20,8 @@ function initGame(worldParams) {
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setClearColor(0x80a0e0);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFShadowMap; // softer more minecraft like shadows
 
   document.body.appendChild(renderer.domElement);
 
@@ -82,16 +84,32 @@ function initGame(worldParams) {
 
 //lighting
 function setupLights() {
-  const light1 = new THREE.DirectionalLight(); // functions like sun all objects get light
+  const light1 = new THREE.DirectionalLight(0xffffff, 1);
   light1.position.set(1, 1, 1);
+  light1.castShadow = true;
+
+  light1.shadow.camera.left = -50;
+  light1.shadow.camera.right = 50;
+  light1.shadow.camera.top = 50;
+  light1.shadow.camera.bottom = -50;
+  light1.shadow.mapSize.width = 2048; // higher resolution for quality
+  light1.shadow.mapSize.height = 2048;
   scene.add(light1);
 
-  const light2 = new THREE.DirectionalLight();
+  const light2 = new THREE.DirectionalLight(0xffffff, 1);
   light2.position.set(-1, 1, -0.5);
+  light2.castShadow = true;
+
+  light2.shadow.camera.left = -50;
+  light2.shadow.camera.right = 50;
+  light2.shadow.camera.top = 50;
+  light2.shadow.camera.bottom = -50;
+  light2.shadow.mapSize.width = 2048; // higher resolution for quality
+  light2.shadow.mapSize.height = 2048;
+
   scene.add(light2);
 
-  const ambient = new THREE.AmbientLight(); // gives some light to objects not being hit by the "sun"
-  ambient.intensity = 0.05;
+  const ambient = new THREE.AmbientLight(0xffffff, 0.5);
   scene.add(ambient);
 }
 
