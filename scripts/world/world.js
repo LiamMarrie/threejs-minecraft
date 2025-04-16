@@ -5,8 +5,6 @@ import { RNG } from "../utils/rng";
 
 import { blocks, resources } from "./blocks/blocks";
 
-import { Sky } from "./environment/sky";
-
 const geometry = new THREE.BoxGeometry();
 
 /**
@@ -45,13 +43,6 @@ export class World extends THREE.Group {
     super();
     this.size = size;
     this.data = [];
-
-    // day and night cycle properties
-    this.time = 0;
-    this.dayDuration = 240;
-
-    // sky and lighting properties
-    this.initSkyAndLights();
   }
   /**
    * generates the world data and meshes
@@ -66,33 +57,10 @@ export class World extends THREE.Group {
   }
 
   /**
-   * initialize sky data
-   */
-  initSkyAndLights() {
-    this.sky = new Sky();
-
-    this.sky.scale.setScalar(450000);
-    this.add(this.sky);
-
-    //sun vector
-    this.sun = new THREE.Vector3();
-
-    // ambient light for base illumination
-    this.ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-    this.add(this.ambientLight);
-
-    // directional light to represent the sun
-    this.sunLight = new THREE.DirectionalLight(0xffffff, 1);
-    this.sunLight.castShadow = true;
-    this.add(this.sunLight);
-  }
-
-  /**
    * initial world terrain data
    */
   initializeTerrain() {
     this.undergroundDepth = 20;
-    // this.size.height now represents the overworld part only.
     this.totalHeight = this.undergroundDepth + this.size.height; // total vertical layers
 
     this.data = []; // clear the data array
@@ -249,11 +217,14 @@ export class World extends THREE.Group {
     for (let x = 0; x < this.size.width; x++) {
       for (let y = 0; y < this.totalHeight; y++) {
         for (let z = 0; z < this.size.width; z++) {
-          const blockId = this.getBlock(x, y, z).id;
-          if (blockId === blocks.empty.id) continue;
-          const mesh = meshes[blockId];
+          const block = this.getBlock(x, y, z);
+          // skip if empty or block entirely hidden
+          if (block.id === blocks.empty.id || this.isBlockHidden(x, y, z))
+            continue;
+
+          const mesh = meshes[block.id];
           const instanceId = mesh.count;
-          // Adjust the y position to convert the array index into the "real" world coordinate.
+
           matrix.setPosition(x, y - this.undergroundDepth, z);
           mesh.setMatrixAt(instanceId, matrix);
           this.setBlockInstanceId(x, y, z, instanceId);
@@ -264,49 +235,8 @@ export class World extends THREE.Group {
     this.add(...Object.values(meshes));
   }
 
-  /**
-   * update method to be called on every frame
-   * delta is the elapsed time in seconds since the last frame
-   *
-   * * day and night cycle at some point maybe......
-   */
   update(delta) {
-    // Update the internal time
-    this.time += delta;
-    // Calculate the time within a full day cycle
-    const dayTime = this.time % this.dayDuration;
-    // Convert to a full circle (2π for a complete cycle)
-    const sunAngle = (dayTime / this.dayDuration) * Math.PI * 2;
-
-    // Update the sun's position: here it moves in a circular path.
-    // You can further adjust this for elevation offset
-    this.sun.x = Math.sin(sunAngle);
-    this.sun.y = Math.cos(sunAngle);
-    this.sun.z = 0; // You might add variation here for a more dynamic cycle
-
-    // --- Update sky shader uniforms ---
-    // Assumes that your sky.js exposes a material with a sunPosition uniform.
-    if (
-      this.sky.material &&
-      this.sky.material.uniforms &&
-      this.sky.material.uniforms["sunPosition"]
-    ) {
-      this.sky.material.uniforms["sunPosition"].value.copy(this.sun);
-    }
-
-    // --- Update the sun light ---
-    // Position the directional light with the sun vector so shadows match up.
-    this.sunLight.position.copy(this.sun);
-
-    // Adjust the light intensities based on the sun elevation.
-    // When the sun is low (or below the horizon), lower the intensities for a night effect.
-    if (this.sun.y < 0) {
-      this.sunLight.intensity = 0.2;
-      this.ambientLight.intensity = 0.1;
-    } else {
-      this.sunLight.intensity = 1;
-      this.ambientLight.intensity = 0.5;
-    }
+    // will add sky box and shit in the future
   }
 
   /**
@@ -391,8 +321,8 @@ export class World extends THREE.Group {
     const neighbors = [
       { x: 0, y: 1, z: 0 }, // up
       { x: 0, y: -1, z: 0 }, // down
-      { x: 1, y: 0, z: 0 }, // left
-      { x: -1, y: 0, z: 0 }, // right
+      { x: 1, y: 0, z: 0 }, // right
+      { x: -1, y: 0, z: 0 }, // left
       { x: 0, y: 0, z: 1 }, // forward
       { x: 0, y: 0, z: -1 }, // back
     ];
@@ -401,7 +331,7 @@ export class World extends THREE.Group {
       const neighborBlock =
         this.getBlock(x + dx, y + dy, z + dz)?.id ?? blocks.empty.id;
       if (neighborBlock === blocks.empty.id) {
-        return false; //block not obscured if any neighbor is empty
+        return false; // block not obscured if any neighbor is empty
       }
     }
 

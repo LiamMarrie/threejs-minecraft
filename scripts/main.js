@@ -1,6 +1,5 @@
 import * as THREE from "three"; // threeJS library
 
-//fps counter
 import Stats from "three/examples/jsm/libs/stats.module.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { World } from "./world/world.js";
@@ -92,7 +91,7 @@ function setupLights() {
   scene.add(light2);
 
   const ambient = new THREE.AmbientLight(); // gives some light to objects not being hit by the "sun"
-  ambient.intensity = 0.1;
+  ambient.intensity = 0.05;
   scene.add(ambient);
 }
 
