@@ -10,11 +10,9 @@ import audioManager from "../player/audio/musicPlayer.js";
  * @param {Function} options.onCancel - Callback when user wants to return to main menu
  */
 export function createNewWorldScreen({ onCreateWorld, onCancel }) {
-  // Create screen container
   const newWorldScreen = document.createElement("div");
   newWorldScreen.id = "new-world-screen";
 
-  // Add content
   newWorldScreen.innerHTML = `
     <div class="minecraft-container">
       <h2 class="screen-title">Create New World</h2>
@@ -23,11 +21,11 @@ export function createNewWorldScreen({ onCreateWorld, onCancel }) {
         <div class="form-group">
           <label for="world-name">World Name</label>
           <input type="text" id="world-name" value="New World">
-          <p class="save-location">Will be saved in: New World</p>
+          <p class="save-location">Will be saved as: New World</p>
         </div>
         
         <div class="form-group">
-          <label for="world-seed">Seed for the World Generator (1-10000)</label>
+          <label for="world-seed">Seed for the World Generator</label>
           <input type="text" id="world-seed" placeholder="">
           <p class="seed-hint">Leave blank for a random seed</p>
         </div>
@@ -176,7 +174,7 @@ export function createNewWorldScreen({ onCreateWorld, onCancel }) {
       const seedInput = document.getElementById("world-seed").value;
       const seed = seedInput
         ? parseInt(seedInput) || seedInput
-        : Math.floor(Math.random() * 10000);
+        : Math.floor(Math.random() * 1000000);
 
       onCreateWorld({
         name: worldName,

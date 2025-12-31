@@ -1,5 +1,6 @@
 import audioManager from "../player/audio/musicPlayer";
 import { createNewWorldScreen } from "./newWorld";
+import { createWorldGenerationScreen } from "./worldGeneration";
 
 /**
  * Creates and manages the landing screen UI
@@ -245,11 +246,18 @@ export function createLandingScreen({ onNewWorld, onLoadWorld }) {
       // route to create ne world
       let newWorldScreen = createNewWorldScreen({
         onCreateWorld: (worldData) => {
+          const loadingScreen = createWorldGenerationScreen({
+            worldData,
+            onGenerationComplete: () => {
+              loadingScreen.removeScreen();
+              onNewWorld(worldData);
+            },
+          });
+
           newWorldScreen.removeScreen();
           newWorldScreen = null;
-
           removeLandingScreen();
-          onNewWorld(worldData);
+          loadingScreen.startGeneration();
         },
         onCancel: () => {
           // return to home page

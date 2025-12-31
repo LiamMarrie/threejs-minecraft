@@ -34,7 +34,7 @@ export function createUI(world, player) {
 
   // terrain folder
   const terrainFolder = gui.addFolder("Terrain");
-  terrainFolder.add(world.params, "seed", 0, 10000).name("Seed").listen();
+  terrainFolder.add(world.params, "seed", 0, 1000000).name("Seed").listen();
   terrainFolder
     .add(world.params.terrain, "scale", 10, 100)
     .name("Scale")
