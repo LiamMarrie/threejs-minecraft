@@ -1,5 +1,5 @@
-import audioManager from "../sfx/musicPlayer";
-import { createNewWorldScreen } from "./new-world";
+import audioManager from "../player/audio/musicPlayer";
+import { createNewWorldScreen } from "./newWorld";
 
 /**
  * Creates and manages the landing screen UI

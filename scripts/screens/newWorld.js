@@ -1,7 +1,7 @@
 /**
  * create new world screen
  */
-import audioManager from "../sfx/musicPlayer";
+import audioManager from "../player/audio/musicPlayer.js";
 
 /**
  * Creates the New World screen UI

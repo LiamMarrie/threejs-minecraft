@@ -9,10 +9,28 @@ export function createUI(world, player) {
   playerFolder.add(player, "maxSpeed", 1, 20).name("Max Speed");
   playerFolder
     .add(player.cameraHelper, "visible")
-    .name("Camera helper viability ");
+    .name("Camera helper visibility");
+  playerFolder
+    .add(
+      {
+        resetPlayerPosition: () => {
+          if (
+            confirm(
+              `Reset player position to spawn point: ${player.spawnPoint}?`
+            )
+          ) {
+            player.resetPlayerPosition();
+          }
+        },
+      },
+      "resetPlayerPosition"
+    )
+    .name("Reset to Spawn Point");
 
-  gui.add(world.size, "width", 8, 128, 1).name("Width").listen();
-  gui.add(world.size, "height", 8, 64, 1).name("Height").listen();
+  const worldFolder = gui.addFolder("World");
+  worldFolder.add(world, "name").name("World Name");
+  worldFolder.add(world.size, "width", 8, 128, 1).name("Width").listen();
+  worldFolder.add(world.size, "height", 8, 64, 1).name("Height").listen();
 
   // terrain folder
   const terrainFolder = gui.addFolder("Terrain");

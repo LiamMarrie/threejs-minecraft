@@ -8,16 +8,11 @@ import { blocks, resources } from "./blocks/blocks";
 const geometry = new THREE.BoxGeometry();
 
 /**
-  
- 
- Use InstancedMesh if you have to render a large number of objects with the same geometry and material(s) but with different world transformations.  
-    - reduces draw calls 
-
- in simplex noise r = math 
-
-
-*/
-
+ * Use InstancedMesh if you have to render a large number of objects with the same geometry and material(s) but with different world transformations.
+ *    - reduces draw calls
+ *
+ * in simplex noise r = math
+ */
 export class World extends THREE.Group {
   /**
    * @type {{
@@ -60,7 +55,7 @@ export class World extends THREE.Group {
    * initial world terrain data
    */
   initializeTerrain() {
-    this.undergroundDepth = 20;
+    this.undergroundDepth = 22; // depth of underground layers
     this.totalHeight = this.undergroundDepth + this.size.height; // total vertical layers
 
     this.data = []; // clear the data array
@@ -84,7 +79,6 @@ export class World extends THREE.Group {
   /**
    * generates resource blocks
    */
-
   generateResources(rng) {
     const simplex = new SimplexNoise(rng);
     resources.forEach((resource) => {

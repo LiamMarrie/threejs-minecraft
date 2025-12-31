@@ -2,7 +2,7 @@
  *
  * TODO:
  * 1. add ui interaction sfx
- * 2. walking sfx with appropriate sfx for the dif block types
+ * 2. walking sfx with appropriate for the dif block types
  * 3. block placing and mining
  */
 

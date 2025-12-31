@@ -22,6 +22,7 @@ export class Player {
   input = new THREE.Vector3(); // store direction player should move based on key input
   velocity = new THREE.Vector3();
   #worldVelocity = new THREE.Vector3();
+  spawnPoint = new THREE.Vector3(); // store player spawn cords on load
 
   constructor(scene) {
     this.camera = new THREE.PerspectiveCamera(
@@ -109,6 +110,21 @@ export class Player {
    */
   get position() {
     return this.camera.position;
+  }
+
+  /**
+   * resets players position to spawn point
+   * @param {Player} player
+   */
+  resetPlayerPosition(player) {
+    return function () {
+      player.position.copy(player.spawnPoint);
+      player.velocity.set(0, 0, 0);
+      player.onGround = false;
+      player.controls.unlock();
+      player.controls.lock();
+      console.log("Player position reset to spawn point");
+    };
   }
 
   /**

@@ -5,7 +5,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { World } from "./world/world.js";
 import { createUI } from "./ui/ui.js";
 import { createLandingScreen } from "./screens/landing.js";
-import audioManager from "./sfx/musicPlayer.js";
+import audioManager from "./player/audio/musicPlayer.js";
 import { Player } from "./player/player.js";
 import { Physics } from "./player/physics.js";
 
